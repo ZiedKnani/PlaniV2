@@ -11,11 +11,11 @@ import {   getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { appSignOut, AuthStore } from '../../store';
 import { router } from 'expo-router';
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import CalendarPicker from "react-native-calendar-picker";
 const ScreenDimension=Dimensions.get('screen');
 
 // category list
-const categories=["football","chess","party","training","yoga"]
-
+const categories=["football","chess","party","training","yoga","studies","entertainement"]
 const CreateEvent = () => {
     const [selectedCategory,setSelectedCategory]=useState("");
     const [description,setDescription]=useState('');
@@ -26,6 +26,14 @@ const CreateEvent = () => {
     const {user}=AuthStore.useState()
     const [eventDate,setEventDate]=useState("");
     const [region,setRegion]=useState("");
+    const [showCalendar, setShowCalendar] = useState(false);
+    const[participant,setParcipant]=useState("");
+    
+
+    const handleDateChange = (date) => {
+        setEventDate(date.toString());
+        setShowCalendar(false); // Hide the calendar after selecting a date
+      };
 
     //select image from library.....
     const selectImage=async ()=>{
@@ -118,7 +126,9 @@ const CreateEvent = () => {
                         else{
                             const docRef=collection(firestore_db,'events');
                             await addDoc(docRef,{
+                                status:true,
                                 category:selectedCategory,
+                                participants:participant,
                                 date:eventDate,
                                 description:description,
                                 eventImage:imageUrl,
@@ -174,13 +184,7 @@ const CreateEvent = () => {
                         </Text>
                     </View>
                 </View>
-                <TouchableOpacity style={{justifyContent:"center",alignItems:"center",width:"auto",position:"relative",right:20,
-                }} onPress={async()=>{
-                    await appSignOut().then(()=>{
-                        alert("signed out !!")
-                    })
-                }} ><Text style={{textAlign:"center",color:"#fff",backgroundColor:"#000",padding:10,borderRadius:5}} >Sign out</Text></TouchableOpacity>
-            </View>
+                </View>
             <SelectDropdown
                 data={categories}
                 onSelect={(selectedItem, index) => {
@@ -218,18 +222,24 @@ const CreateEvent = () => {
 
             />
             {/* select region and date of the event  */}
-            <KeyboardAvoidingView behavior={Platform.OS=="ios" ? "padding": "height"} style={{flexDirection:"row",width:"100%",gap:20,justifyContent:"center"}} >
-                <View style={styles.textInputView}>
-                    <Text style={styles.label}>Event Date</Text>
-                    <TextInput
-                    value={eventDate}
-                    onChangeText={(text)=>setEventDate(text)}
-                    style={styles.textInput}
-                    placeholder='29 juin'
-                    />
-                </View>
-                <View style={styles.textInputView}>
+            <KeyboardAvoidingView behavior={Platform.OS=="ios" ? "padding": "height"} style={{flexDirection:"column",width:"100%",gap:20,justifyContent:"center",alignItems:"center"}} >
+            <View>
+            <Pressable onPress={() => setShowCalendar(true)}><Ionicons name='time' size={30} style={{borderRadius:100}}  /></Pressable>
+      {showCalendar && (
+        <CalendarPicker 
+          onDateChange={handleDateChange} 
+          onClose={() => setShowCalendar(false)} // Hide the calendar if closed without selecting a date
+        />)}
+      { eventDate && <Text>Selected date: {eventDate}</Text>}
+    </View>
+                <View style={{flexDirection:"column",width:"100%",gap:20,justifyContent:"center",alignItems:"center",margin:5}}>
                     <Text style={styles.label}>Event place(region)</Text>
+                    <TextInput
+                    value={participant}
+                    onChangeText={(text)=>setParcipant(text)}
+                    style={styles.textInput}
+                    placeholder='####'
+                    />
                     <TextInput
                     value={region}
                     onChangeText={(text)=>setRegion(text)}

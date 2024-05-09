@@ -1,9 +1,10 @@
-import { View, Text, Image, Pressable, Platform } from 'react-native'
+import { View, Text, Image, Pressable, TouchableOpacity,Platform } from 'react-native'
 import React, { useEffect } from 'react'
 import { Redirect, Slot, Stack, useRouter } from 'expo-router'
-import { AuthStore } from '../../store'
+import { AuthStore,appSignOut } from '../../store'
 import { events } from '../../constants/data'
 import { Ionicons } from '@expo/vector-icons'
+
 const Layout = () => {
   const router=useRouter()
   const {isLoggedIn,user}=AuthStore.useState();
@@ -39,10 +40,18 @@ const Layout = () => {
               </View>
           </Pressable>  
         ),
+        headerRight:(()=>
+        <TouchableOpacity style={{justifyContent:"center",alignItems:"center",width:"auto",position:"relative",right:20,margin:5,marginRight:5
+      }} onPress={async()=>{
+          await appSignOut().then(()=>{
+              alert("signed out !!")
+          })
+      }} ><Text style={{textAlign:"center",color:"#fff",backgroundColor:"#000",padding:10,borderRadius:5}} >Sign out</Text></TouchableOpacity>),
         title:null,
         headerShadowVisible:false,
 
       }}  name='index'  />
+      <Stack.Screen name="profile" options={{headerShown:false}} />
       <Stack.Screen name="createEvent" options={{headerShown:false}} />
       <Stack.Screen name="[eventDetails]" options={{headerShown:false}} />
     </Stack>
